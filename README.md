@@ -11,14 +11,14 @@ It sets up the toolchain (MSYS2 for Windows, Homebrew GCC for macOS) and downloa
 To use the action, simply add the following code to your CI script:
 
 ```yaml
-- name: Install SDK
-  id: install_sdk
+- name: Setup SDK
+  id: setup_sdk
   uses: WerWolv/imhex-download-sdk@v2
   with:
-    imhex_version: '1.39.0'
+    version: '1.39.0'
 ```
 
-Where the `imhex_version` input refers to the exact ImHex version whose SDK should be used.
+Where the `version` input refers to the exact ImHex version whose SDK should be used.
 For example, if you want to build a plugin for ImHex version 1.39.0, pass `1.39.0`.
 
 Visit the [ImHex-Plugin-Template](https://github.com/WerWolv/ImHex-Plugin-Template) repository if you'd like to get started.
@@ -33,8 +33,8 @@ ImHex versions older than `1.39.0` were based on the now deprecated MSYS2 MINGW6
 For compatibility please use an older version of this GitHub Action.
 
 ```yaml
-- name: Install SDK
-  id: install_sdk
+- name: Setup SDK
+  id: setup_sdk
   uses: WerWolv/imhex-download-sdk@vX.Y.Z
 ```
 
@@ -46,12 +46,12 @@ For example, if you want to build a plugin for ImHex version 1.38.1, use `WerWol
 All inputs and their defaults.
 
 ```yaml
-- name: Install SDK
-  id: install_sdk
+- name: Setup SDK
+  id: setup_sdk
   uses: WerWolv/imhex-download-sdk@v2
   with:
     # The version of SDK to install, e.g., '1.39.0', 'nightly' (default: '')
-    imhex_version: '1.39.0'
+    version: '1.39.0'
 ```
 
 ### Outputs
