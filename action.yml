@@ -7,7 +7,7 @@ branding:
 
 inputs:
   imhex_version:
-    description: 'ImHex version to target (e.g., 1.39.0)'
+    description: 'ImHex version to target (e.g., 1.39.0 or nightly)'
     required: true
 
 outputs:
@@ -18,6 +18,16 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Determine version tag
+      id: vars
+      shell: bash
+      run: |
+        if [ "${{ inputs.imhex_version }}" = "nightly" ]; then
+          echo "tag=nightly" >> $GITHUB_OUTPUT
+        else
+          echo "tag=v${{ inputs.imhex_version }}" >> $GITHUB_OUTPUT
+        fi
+
     # Handle building on a Windows runner
     - name: Install msys2
       if: runner.os == 'Windows'
@@ -30,7 +40,7 @@ runs:
       shell: msys2 {0}
       run: |
         set -x
-        wget https://raw.githubusercontent.com/WerWolv/ImHex/v${{ inputs.imhex_version }}/dist/get_deps_msys2.sh
+        wget https://raw.githubusercontent.com/WerWolv/ImHex/${{ steps.vars.outputs.tag }}/dist/get_deps_msys2.sh
         chmod +x get_deps_msys2.sh
         ./get_deps_msys2.sh
         pacman -S --needed --noconfirm unzip
@@ -41,7 +51,7 @@ runs:
       shell: msys2 {0}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/v${{ inputs.imhex_version }}/imhex-${{ inputs.imhex_version }}-Windows-Portable-x86_64.zip
+        wget https://github.com/WerWolv/ImHex/releases/download/${{ steps.vars.outputs.tag }}/imhex-${{ inputs.imhex_version }}-Windows-Portable-x86_64.zip
         mkdir -p imhex
         unzip imhex-${{ inputs.imhex_version }}-Windows-Portable-x86_64.zip -d imhex
         echo "sdk_path=$(pwd)/imhex/sdk" >> $GITHUB_OUTPUT
@@ -52,7 +62,7 @@ runs:
       shell: bash
       run: |
         set -x
-        wget https://raw.githubusercontent.com/WerWolv/ImHex/v${{ inputs.imhex_version }}/dist/Brewfile
+        wget https://raw.githubusercontent.com/WerWolv/ImHex/${{ steps.vars.outputs.tag }}/dist/Brewfile
         brew reinstall python || brew link --overwrite python
         brew bundle --no-lock --file Brewfile
         rm -rf /usr/local/Cellar/capstone
@@ -63,7 +73,7 @@ runs:
       shell: bash
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/v${{ inputs.imhex_version }}/imhex-${{ inputs.imhex_version }}-macOS-x86_64.dmg
+        wget https://github.com/WerWolv/ImHex/releases/download/${{ steps.vars.outputs.tag }}/imhex-${{ inputs.imhex_version }}-macOS-x86_64.dmg
         brew install sevenzip
         7zz x -aoa -snld imhex-${{ inputs.imhex_version }}-macOS-x86_64.dmg || true
         echo "sdk_path=$(pwd)/imhex-${{ inputs.imhex_version }}-macOS-x86_64/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
@@ -73,8 +83,8 @@ runs:
       id: sdk_install
       run: |
         set -x
-        WIN_PATH=${{ steps.sdk_install_win.outputs.sdk_path }}
-        MAC_PATH=${{ steps.sdk_install_macos.outputs.sdk_path }}
+        WIN_PATH="${{ steps.sdk_install_win.outputs.sdk_path }}"
+        MAC_PATH="${{ steps.sdk_install_macos.outputs.sdk_path }}"
         if [ -z "$WIN_PATH" ]; then
             echo "sdk_path=$MAC_PATH" >> $GITHUB_OUTPUT
         else

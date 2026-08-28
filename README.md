@@ -50,14 +50,13 @@ All inputs and their defaults.
   id: install_sdk
   uses: WerWolv/imhex-download-sdk@v2
   with:
-    # The version of SDK to install, e.g., "1.39.0", "latest" (default: latest)
+    # The version of SDK to install, e.g., '1.39.0', 'nightly' (default: '')
     imhex_version: '1.39.0'
 ```
 
 ### Outputs
 
 - `sdk_path` - Path to the ImHex SDK.
-
 
 ## License
 
