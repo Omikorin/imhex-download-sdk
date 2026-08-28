@@ -21,39 +21,43 @@ runs:
     - name: Determine version tag
       id: vars
       shell: bash
+      env:
+        INPUTS_IMHEX_VERSION: ${{ inputs.imhex_version }}
       run: |
-        VERSION="${{ inputs.imhex_version }}"
+        VERSION="${INPUTS_IMHEX_VERSION}"
         if [ "$VERSION" = "nightly" ]; then
           echo "tag=nightly" >> $GITHUB_OUTPUT
         else
           # split the version string by '.'
           IFS='.' read -r major minor patch <<< "$VERSION"
-          
+
           # default to 0 in case the input is malformed
           major=${major:-0}
           minor=${minor:-0}
-          
+
           if [ "$major" -lt 1 ] || { [ "$major" -eq 1 ] && [ "$minor" -lt 39 ]; }; then
             echo "::error::For ImHex versions below 1.39.0, please use the v1 version of this action."
             exit 1
           fi
-          
+
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
         fi
 
     # Handle building on a Windows runner
     - name: Install msys2
       if: runner.os == 'Windows'
-      uses: msys2/setup-msys2@v2
+      uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
       with:
         msystem: ucrt64
 
     - name: Install dependencies
       if: runner.os == 'Windows'
       shell: msys2 {0}
+      env:
+        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         set -x
-        wget https://raw.githubusercontent.com/WerWolv/ImHex/${{ steps.vars.outputs.tag }}/dist/get_deps_msys2.sh
+        wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/get_deps_msys2.sh
         chmod +x get_deps_msys2.sh
         ./get_deps_msys2.sh
         pacman -S --needed --noconfirm unzip
@@ -62,20 +66,25 @@ runs:
       if: runner.os == 'Windows'
       id: sdk_install_win
       shell: msys2 {0}
+      env:
+        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
+        INPUTS_IMHEX_VERSION: ${{ inputs.imhex_version }}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/${{ steps.vars.outputs.tag }}/imhex-${{ inputs.imhex_version }}-Windows-Portable-x86_64.zip
+        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_IMHEX_VERSION}-Windows-Portable-x86_64.zip
         mkdir -p imhex
-        unzip imhex-${{ inputs.imhex_version }}-Windows-Portable-x86_64.zip -d imhex
+        unzip imhex-${INPUTS_IMHEX_VERSION}-Windows-Portable-x86_64.zip -d imhex
         echo "sdk_path=$(pwd)/imhex/sdk" >> $GITHUB_OUTPUT
 
     # Handle building on a macOS runner
     - name: Install dependencies
       if: runner.os == 'macOS'
       shell: bash
+      env:
+        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         set -x
-        wget https://raw.githubusercontent.com/WerWolv/ImHex/${{ steps.vars.outputs.tag }}/dist/Brewfile
+        wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
         brew reinstall python || brew link --overwrite python
         brew bundle --no-lock --file Brewfile
         rm -rf /usr/local/Cellar/capstone
@@ -84,20 +93,26 @@ runs:
       if: runner.os == 'macOS'
       id: sdk_install_macos
       shell: bash
+      env:
+        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
+        INPUTS_IMHEX_VERSION: ${{ inputs.imhex_version }}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/${{ steps.vars.outputs.tag }}/imhex-${{ inputs.imhex_version }}-macOS-x86_64.dmg
+        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64.dmg
         brew install sevenzip
-        7zz x -aoa -snld imhex-${{ inputs.imhex_version }}-macOS-x86_64.dmg || true
-        echo "sdk_path=$(pwd)/imhex-${{ inputs.imhex_version }}-macOS-x86_64/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
+        7zz x -aoa -snld imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64.dmg || true
+        echo "sdk_path=$(pwd)/imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
 
     - name: Set SDK Variable
       shell: bash
       id: sdk_install
+      env:
+        STEPS_SDK_INSTALL_WIN_OUTPUTS_SDK_PATH: ${{ steps.sdk_install_win.outputs.sdk_path }}
+        STEPS_SDK_INSTALL_MACOS_OUTPUTS_SDK_PATH: ${{ steps.sdk_install_macos.outputs.sdk_path }}
       run: |
         set -x
-        WIN_PATH="${{ steps.sdk_install_win.outputs.sdk_path }}"
-        MAC_PATH="${{ steps.sdk_install_macos.outputs.sdk_path }}"
+        WIN_PATH="${STEPS_SDK_INSTALL_WIN_OUTPUTS_SDK_PATH}"
+        MAC_PATH="${STEPS_SDK_INSTALL_MACOS_OUTPUTS_SDK_PATH}"
         if [ -z "$WIN_PATH" ]; then
             echo "sdk_path=$MAC_PATH" >> $GITHUB_OUTPUT
         else
