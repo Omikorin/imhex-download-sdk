@@ -1,4 +1,4 @@
-name: 'ImHex Plugin'
+name: 'ImHex Download SDK'
 description: 'Action that sets up necessary things to build ImHex plugins'
 author: WerWolv
 branding:
