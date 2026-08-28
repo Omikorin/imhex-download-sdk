@@ -10,10 +10,10 @@ inputs:
     required: true
 outputs:
   sdk_path:
-    description: "Path to the ImHex SDK"
+    description: 'Path to the ImHex SDK'
     value: ${{ steps.sdk_install.outputs.sdk_path }}
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     # Get version of this action that's being used
     - name: Get Action Version
