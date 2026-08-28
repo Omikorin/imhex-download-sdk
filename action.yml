@@ -22,10 +22,23 @@ runs:
       id: vars
       shell: bash
       run: |
-        if [ "${{ inputs.imhex_version }}" = "nightly" ]; then
+        VERSION="${{ inputs.imhex_version }}"
+        if [ "$VERSION" = "nightly" ]; then
           echo "tag=nightly" >> $GITHUB_OUTPUT
         else
-          echo "tag=v${{ inputs.imhex_version }}" >> $GITHUB_OUTPUT
+          # split the version string by '.'
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          
+          # default to 0 in case the input is malformed
+          major=${major:-0}
+          minor=${minor:-0}
+          
+          if [ "$major" -lt 1 ] || { [ "$major" -eq 1 ] && [ "$minor" -lt 39 ]; }; then
+            echo "::error::For ImHex versions below 1.39.0, please use the v1 version of this action."
+            exit 1
+          fi
+          
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
         fi
 
     # Handle building on a Windows runner
