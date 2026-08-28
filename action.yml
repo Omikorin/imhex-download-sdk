@@ -100,8 +100,8 @@ runs:
         set -x
         wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64.dmg
         brew install sevenzip
-        7zz x -aoa -snld imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64.dmg || true
-        echo "sdk_path=$(pwd)/imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
+        7zz x -aoa -snld imhex-${INPUTS_IMHEX_VERSION}-macOS-x86_64.dmg -o imhex || true
+        echo "sdk_path=$(pwd)/imhex/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
 
     - name: Set SDK Variable
       shell: bash
