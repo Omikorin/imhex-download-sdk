@@ -18,6 +18,13 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Check supported OS
+      if: runner.os != 'Windows' && runner.os != 'macOS'
+      shell: bash
+      run: |
+        echo "::error::Unsupported OS: ${{ runner.os }}. This action only supports Windows and macOS at this moment."
+        exit 1
+
     - name: Determine version tag
       id: vars
       shell: bash
