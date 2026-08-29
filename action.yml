@@ -15,6 +15,11 @@ inputs:
     required: false
     default: 'x86_64'
 
+  install_dependencies:
+    description: 'Whether to install system dependencies via pacman/brew'
+    required: false
+    default: 'true'
+
 outputs:
   sdk_path:
     description: 'Path to the ImHex SDK'
@@ -56,14 +61,14 @@ runs:
         fi
 
     # Handle building on a Windows runner
-    - name: Install msys2
+    - name: Setup msys2
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
       with:
         msystem: ucrt64
 
     - name: Install dependencies
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows' && inputs.install_dependencies == 'true'
       shell: msys2 {0}
       env:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
@@ -91,7 +96,7 @@ runs:
 
     # Handle building on a macOS runner
     - name: Install dependencies
-      if: runner.os == 'macOS'
+      if: runner.os == 'macOS' && inputs.install_dependencies == 'true'
       shell: bash
       env:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
@@ -100,6 +105,7 @@ runs:
         wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
         brew reinstall python || brew link --overwrite python
         brew bundle --no-lock --file Brewfile
+        brew install sevenzip
         rm -rf /usr/local/Cellar/capstone
 
     - name: Install ImHex SDK
@@ -113,7 +119,6 @@ runs:
       run: |
         set -x
         wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
-        brew install sevenzip
         7zz x -aoa -snld imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg -o"imhex"
         echo "sdk_path=$(pwd)/imhex/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
 

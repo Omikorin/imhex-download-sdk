@@ -81,6 +81,11 @@ All inputs and their defaults.
     # Target architecture (x86_64 or arm64)
     # default: 'x86_64'
     arch: 'x86_64'
+
+    # Whether to install system dependencies via pacman/brew
+    # If false, then you need to provide the following executables: unzip for Windows and 7zz (sevenzip in brew) for macOS
+    # default: 'true'
+    install_dependencies: 'true'
 ```
 
 ### Outputs
