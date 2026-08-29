@@ -50,21 +50,6 @@ then, read that file inside your CI job:
     version: '${{ steps.imhex-version.outputs.IMHEX_VERSION }}'
 ```
 
-#### ImHex 1.38.1 and older
-
-ImHex versions older than `1.39.0` were based on the now deprecated MSYS2 MINGW64 when compiling for Windows. Newer releases use MSYS2 UCRT64 subsystem.
-
-For compatibility please use an older version of this GitHub Action.
-
-```yaml
-- name: Setup SDK
-  id: setup_sdk
-  uses: WerWolv/imhex-download-sdk@vX.Y.Z
-```
-
-Where `@vX.Y.Z` refers to the ImHex version whose SDK should be used.
-For example, if you want to build a plugin for ImHex version 1.38.1, use `WerWolv/imhex-download-sdk@v1.38.1`
-
 ### Inputs
 
 All inputs and their defaults.
