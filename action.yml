@@ -92,7 +92,7 @@ runs:
         ./get_deps_msys2.sh
         pacman -S --needed --noconfirm unzip
 
-    - name: Install ImHex SDK
+    - name: Download ImHex SDK
       if: runner.os == 'Windows' && steps.cache-sdk.outputs.cache-hit != 'true'
       shell: msys2 {0}
       env:
@@ -121,7 +121,7 @@ runs:
         brew install sevenzip
         rm -rf /usr/local/Cellar/capstone
 
-    - name: Install ImHex SDK
+    - name: Download ImHex SDK
       if: runner.os == 'macOS' && steps.cache-sdk.outputs.cache-hit != 'true'
       shell: bash
       env:
