@@ -79,9 +79,9 @@ runs:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         if [ "${{ runner.os }}" = "Windows" ]; then
-          wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/get_deps_msys2.sh
+          curl -fLO https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/get_deps_msys2.sh
         else
-          wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
+          curl -fLO https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
         fi
 
     - name: Cache ImHex SDK
@@ -119,7 +119,7 @@ runs:
         INPUTS_ARCH: ${{ inputs.arch }}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip
+        curl -fLO https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip
         mkdir -p imhex_temp
         unzip imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip -d imhex_temp
         mv imhex_temp/sdk imhex-sdk
@@ -147,7 +147,7 @@ runs:
         INPUTS_ARCH: ${{ inputs.arch }}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
+        curl -fLO https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
         7zz x -aoa -snld imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg -o"imhex_temp"
         mv imhex_temp/imhex.app/Contents/Resources/sdk imhex-sdk
         rm -rf imhex_temp imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
