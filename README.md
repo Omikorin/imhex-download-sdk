@@ -86,6 +86,10 @@ All inputs and their defaults.
     # If false, then you need to provide the following executables: unzip for Windows and 7zz (sevenzip in brew) for macOS
     # default: 'true'
     install_dependencies: 'true'
+
+    # Cache the downloaded ImHex SDK
+    # default: 'true'
+    cache: 'true'
 ```
 
 ### Outputs
