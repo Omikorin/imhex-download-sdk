@@ -81,6 +81,30 @@ All inputs and their defaults.
 
 - `sdk_path` - Path to the ImHex SDK.
 
+## Development
+
+### Requirements
+
+- prek 0.5.0+
+
+### Setup pre-commit hooks
+
+You can install hooks to automatically run the validation checks:
+
+```shell
+prek install
+```
+
+### Basic workflow
+
+```shell
+# Run pre-commit checks for changed files
+prek
+
+# Run all pre-commit checks
+prek --all-files
+```
+
 ## License
 
 This project is licensed under the terms of the [GPL-2.0-only license](https://github.com/WerWolv/imhex-download-sdk/blob/master/LICENSE).
