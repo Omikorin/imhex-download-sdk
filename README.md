@@ -74,8 +74,13 @@ All inputs and their defaults.
   id: setup_sdk
   uses: WerWolv/imhex-download-sdk@v2
   with:
-    # The version of SDK to install, e.g., '1.39.0', 'nightly' (default: '')
+    # ImHex version to target (e.g., 1.39.0 or nightly)
+    # required
     version: '1.39.0'
+
+    # Target architecture (x86_64 or arm64)
+    # default: 'x86_64'
+    arch: 'x86_64'
 ```
 
 ### Outputs

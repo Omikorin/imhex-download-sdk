@@ -10,6 +10,11 @@ inputs:
     description: 'ImHex version to target (e.g., 1.39.0 or nightly)'
     required: true
 
+  arch:
+    description: 'Target architecture (x86_64 or arm64)'
+    required: false
+    default: 'x86_64'
+
 outputs:
   sdk_path:
     description: 'Path to the ImHex SDK'
@@ -76,11 +81,12 @@ runs:
       env:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
         INPUTS_VERSION: ${{ inputs.version }}
+        INPUTS_ARCH: ${{ inputs.arch }}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-Windows-Portable-x86_64.zip
+        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip
         mkdir -p imhex
-        unzip imhex-${INPUTS_VERSION}-Windows-Portable-x86_64.zip -d imhex
+        unzip imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip -d imhex
         echo "sdk_path=$(pwd)/imhex/sdk" >> $GITHUB_OUTPUT
 
     # Handle building on a macOS runner
@@ -103,11 +109,12 @@ runs:
       env:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
         INPUTS_VERSION: ${{ inputs.version }}
+        INPUTS_ARCH: ${{ inputs.arch }}
       run: |
         set -x
-        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-macOS-x86_64.dmg
+        wget https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
         brew install sevenzip
-        7zz x -aoa -snld imhex-${INPUTS_VERSION}-macOS-x86_64.dmg -o"imhex"
+        7zz x -aoa -snld imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg -o"imhex"
         echo "sdk_path=$(pwd)/imhex/imhex.app/Contents/Resources/sdk" >> $GITHUB_OUTPUT
 
     - name: Set SDK Variable
