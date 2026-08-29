@@ -67,6 +67,18 @@ runs:
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
         fi
 
+    - name: Fetch dependency files
+      if: inputs.install_dependencies == 'true'
+      shell: bash
+      env:
+        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/get_deps_msys2.sh
+        else
+          wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
+        fi
+
     - name: Cache ImHex SDK
       if: inputs.cache == 'true'
       id: cache-sdk
@@ -89,7 +101,6 @@ runs:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         set -x
-        wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/get_deps_msys2.sh
         chmod +x get_deps_msys2.sh
         ./get_deps_msys2.sh
         pacman -S --needed --noconfirm unzip
@@ -117,7 +128,6 @@ runs:
         STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         set -x
-        wget https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
         brew reinstall python || brew link --overwrite python
         brew bundle --no-lock --file Brewfile
         brew install sevenzip
