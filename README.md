@@ -26,6 +26,30 @@ Visit the [ImHex-Plugin-Template](https://github.com/WerWolv/ImHex-Plugin-Templa
 > [!IMPORTANT]
 > ImHex 1.39.0 is not available yet.
 
+#### Using a version file
+
+If you want to manage the ImHex SDK version via a separate file without a need to update workflow and/or your environment, you can create a file called e.g.: `.imhex-version` with the desired version:
+
+```text
+1.39.0
+```
+
+then, read that file inside your CI job:
+
+```yaml
+- name: Read .imhex-version
+  id: imhex-version
+  run: |
+    IMHEX_VERSION=$(cat .imhex-version | tr -d '\r\n')
+    echo "IMHEX_VERSION=${IMHEX_VERSION}" >> "${GITHUB_OUTPUT}"
+
+- name: Setup SDK
+  id: setup_sdk
+  uses: WerWolv/imhex-download-sdk@v2
+  with:
+    version: '${{ steps.imhex-version.outputs.IMHEX_VERSION }}'
+```
+
 #### ImHex 1.38.1 and older
 
 ImHex versions older than `1.39.0` were based on the now deprecated MSYS2 MINGW64 when compiling for Windows. Newer releases use MSYS2 UCRT64 subsystem.
