@@ -40,16 +40,20 @@ runs:
         echo "::error::Unsupported OS: ${{ runner.os }}. This action only supports Windows and macOS at this moment."
         exit 1
 
-    - name: Determine version tag
+    - name: Determine version tag and MSYS2 subsystem
       id: vars
       shell: bash
       env:
         INPUTS_VERSION: ${{ inputs.version }}
+        INPUTS_ARCH: ${{ inputs.arch }}
       run: |
         VERSION="${INPUTS_VERSION}"
+        ARCH="${INPUTS_ARCH}"
+
         if [ "$VERSION" = "nightly" ]; then
           echo "tag=nightly" >> $GITHUB_OUTPUT
-          echo "msystem=ucrt64" >> $GITHUB_OUTPUT
+          major=999 # dummy values to simplify checking
+          minor=999
         else
           # split the version string by '.'
           IFS='.' read -r major minor patch <<< "$VERSION"
@@ -57,14 +61,15 @@ runs:
           # default to 0 in case the input is malformed
           major=${major:-0}
           minor=${minor:-0}
-
-          if [ "$major" -lt 1 ] || { [ "$major" -eq 1 ] && [ "$minor" -lt 39 ]; }; then
-            echo "msystem=mingw64" >> $GITHUB_OUTPUT
-          else
-            echo "msystem=ucrt64" >> $GITHUB_OUTPUT
-          fi
-
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+        fi
+
+        if [ "$ARCH" = "arm64" ]; then
+          echo "msystem=clangarm64" >> $GITHUB_OUTPUT
+        elif [ "$major" -lt 1 ] || { [ "$major" -eq 1 ] && [ "$minor" -lt 39 ]; }; then
+          echo "msystem=mingw64" >> $GITHUB_OUTPUT
+        else
+          echo "msystem=ucrt64" >> $GITHUB_OUTPUT
         fi
 
     - name: Fetch dependency files
