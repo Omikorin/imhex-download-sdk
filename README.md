@@ -63,9 +63,9 @@ All inputs and their defaults.
     # required
     version: ''
 
-    # Target architecture (x86_64 or arm64)
-    # default: 'x86_64'
-    arch: 'x86_64'
+    # Target architecture (x86_64 or arm64). Defaults to auto-detecting the runner architecture.
+    # default: 'auto'
+    arch: 'auto'
 
     # Whether to install system dependencies via pacman/brew
     # If false, then you need to provide the following executables: unzip for Windows

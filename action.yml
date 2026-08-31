@@ -11,9 +11,9 @@ inputs:
     required: true
 
   arch:
-    description: 'Target architecture (x86_64 or arm64)'
+    description: 'Target architecture (x86_64 or arm64). Defaults to auto-detecting the runner architecture.'
     required: false
-    default: 'x86_64'
+    default: 'auto'
 
   install_dependencies:
     description: 'Whether to install system dependencies via pacman/brew'
@@ -45,8 +45,31 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
-        ARCH: ${{ inputs.arch }}
+        INPUT_ARCH: ${{ inputs.arch }}
       run: |
+        set -e
+
+        # determine architecture
+        if [ "$INPUT_ARCH" = "auto" ]; then
+          case "${{ runner.arch }}" in
+            "ARM64")
+              ARCH="arm64"
+              ;;
+            "X64")
+              ARCH="x86_64"
+              ;;
+            *)
+              echo "::warning::Unexpected runner architecture: ${{ runner.arch }}. Falling back to x86_64."
+              ARCH="x86_64"
+              ;;
+          esac
+        else
+          ARCH="$INPUT_ARCH"
+        fi
+
+        echo "arch=$ARCH" >> $GITHUB_OUTPUT
+
+        # determine version tag
         if [ "$VERSION" = "nightly" ]; then
           TAG="nightly"
         else
@@ -101,7 +124,7 @@ runs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: imhex-sdk
-        key: imhex-sdk-${{ runner.os }}-${{ inputs.arch }}-${{ inputs.version }}
+        key: imhex-sdk-${{ runner.os }}-${{ steps.vars.outputs.arch }}-${{ inputs.version }}
 
     # Handle building on a Windows runner
     - name: Setup msys2
@@ -125,7 +148,7 @@ runs:
       env:
         TAG: ${{ steps.vars.outputs.tag }}
         VERSION: ${{ steps.vars.outputs.version }}
-        ARCH: ${{ inputs.arch }}
+        ARCH: ${{ steps.vars.outputs.arch }}
       run: |
         set -x
         curl -fLO https://github.com/WerWolv/ImHex/releases/download/${TAG}/imhex-${VERSION}-Windows-Portable-${ARCH}.zip
@@ -140,9 +163,9 @@ runs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/Library/Caches/Homebrew
-        key: brew-${{ runner.os }}-${{ inputs.arch }}-${{ inputs.version }}
+        key: brew-${{ runner.os }}-${{ steps.vars.outputs.arch }}-${{ inputs.version }}
         restore-keys: |
-          brew-${{ runner.os }}-${{ inputs.arch }}-
+          brew-${{ runner.os }}-${{ steps.vars.outputs.arch }}-
 
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS' && inputs.install_dependencies == 'true'
@@ -159,7 +182,7 @@ runs:
       env:
         TAG: ${{ steps.vars.outputs.tag }}
         VERSION: ${{ steps.vars.outputs.version }}
-        ARCH: ${{ inputs.arch }}
+        ARCH: ${{ steps.vars.outputs.arch }}
       run: |
         set -x
         curl -fLO https://github.com/WerWolv/ImHex/releases/download/${TAG}/imhex-${VERSION}-macOS-${ARCH}.dmg
