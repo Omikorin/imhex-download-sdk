@@ -158,12 +158,19 @@ runs:
         rm -rf imhex_temp imhex-${VERSION}-Windows-Portable-${ARCH}.zip
 
     # Handle building on a macOS runner
+    - name: Get Homebrew cache path
+      if: runner.os == 'macOS' && inputs.cache == 'true'
+      id: brew-cache-dir
+      shell: bash
+      run: |
+        echo "path=$(brew --cache)" >> $GITHUB_OUTPUT
+
     - name: Cache Homebrew downloads
       if: runner.os == 'macOS' && inputs.cache == 'true'
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/Library/Caches/Homebrew
-        key: brew-${{ runner.os }}-${{ steps.vars.outputs.arch }}-${{ inputs.version }}
+        path: ${{ steps.brew-cache-dir.outputs.path }}
+        key: brew-${{ runner.os }}-${{ steps.vars.outputs.arch }}-${{ hashFiles('Brewfile') }}
         restore-keys: |
           brew-${{ runner.os }}-${{ steps.vars.outputs.arch }}-
 
