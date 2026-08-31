@@ -61,7 +61,7 @@ All inputs and their defaults.
   with:
     # ImHex version to target (e.g., 1.39.0 or nightly)
     # required
-    version: '1.39.0'
+    version: ''
 
     # Target architecture (x86_64 or arm64)
     # default: 'x86_64'

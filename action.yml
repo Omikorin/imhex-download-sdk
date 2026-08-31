@@ -44,29 +44,40 @@ runs:
       id: vars
       shell: bash
       env:
-        INPUTS_VERSION: ${{ inputs.version }}
-        INPUTS_ARCH: ${{ inputs.arch }}
+        VERSION: ${{ inputs.version }}
+        ARCH: ${{ inputs.arch }}
       run: |
-        VERSION="${INPUTS_VERSION}"
-        ARCH="${INPUTS_ARCH}"
-
         if [ "$VERSION" = "nightly" ]; then
-          echo "tag=nightly" >> $GITHUB_OUTPUT
+          TAG="nightly"
+        else
+          TAG="v$VERSION"
+        fi
+
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+        # version extraction
+        if [ "$VERSION" = "nightly" ]; then
+          FILE_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/WerWolv/ImHex/${TAG}/VERSION" | tr -d '[:space:]')
+          echo "version=$FILE_VERSION" >> $GITHUB_OUTPUT
+
           major=999 # dummy values to simplify checking
           minor=999
         else
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
           # split the version string by '.'
           IFS='.' read -r major minor patch <<< "$VERSION"
 
           # default to 0 in case the input is malformed
           major=${major:-0}
           minor=${minor:-0}
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
         fi
 
+        # determine msys2 subsystem
         if [ "$ARCH" = "arm64" ]; then
           echo "msystem=clangarm64" >> $GITHUB_OUTPUT
         elif [ "$major" -lt 1 ] || { [ "$major" -eq 1 ] && [ "$minor" -lt 39 ]; }; then
+          # deprecated mingw64 for versions < 1.39.0
           echo "msystem=mingw64" >> $GITHUB_OUTPUT
         else
           echo "msystem=ucrt64" >> $GITHUB_OUTPUT
@@ -76,12 +87,12 @@ runs:
       if: inputs.install_dependencies == 'true'
       shell: bash
       env:
-        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
+        TAG: ${{ steps.vars.outputs.tag }}
       run: |
         if [ "${{ runner.os }}" = "Windows" ]; then
-          curl -fLO https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/get_deps_msys2.sh
+          curl -fLO https://raw.githubusercontent.com/WerWolv/ImHex/${TAG}/dist/get_deps_msys2.sh
         else
-          curl -fLO https://raw.githubusercontent.com/WerWolv/ImHex/${STEPS_VARS_OUTPUTS_TAG}/dist/Brewfile
+          curl -fLO https://raw.githubusercontent.com/WerWolv/ImHex/${TAG}/dist/Brewfile
         fi
 
     - name: Cache ImHex SDK
@@ -102,8 +113,6 @@ runs:
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows' && inputs.install_dependencies == 'true'
       shell: msys2 {0}
-      env:
-        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         set -x
         chmod +x get_deps_msys2.sh
@@ -114,16 +123,16 @@ runs:
       if: runner.os == 'Windows' && steps.cache-sdk.outputs.cache-hit != 'true'
       shell: msys2 {0}
       env:
-        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
-        INPUTS_VERSION: ${{ inputs.version }}
-        INPUTS_ARCH: ${{ inputs.arch }}
+        TAG: ${{ steps.vars.outputs.tag }}
+        VERSION: ${{ steps.vars.outputs.version }}
+        ARCH: ${{ inputs.arch }}
       run: |
         set -x
-        curl -fLO https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip
+        curl -fLO https://github.com/WerWolv/ImHex/releases/download/${TAG}/imhex-${VERSION}-Windows-Portable-${ARCH}.zip
         mkdir -p imhex_temp
-        unzip imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip -d imhex_temp
+        unzip imhex-${VERSION}-Windows-Portable-${ARCH}.zip -d imhex_temp
         mv imhex_temp/sdk imhex-sdk
-        rm -rf imhex_temp imhex-${INPUTS_VERSION}-Windows-Portable-${INPUTS_ARCH}.zip
+        rm -rf imhex_temp imhex-${VERSION}-Windows-Portable-${ARCH}.zip
 
     # Handle building on a macOS runner
     - name: Cache Homebrew downloads
@@ -138,8 +147,6 @@ runs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS' && inputs.install_dependencies == 'true'
       shell: bash
-      env:
-        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
       run: |
         set -x
         brew reinstall python || brew link --overwrite python
@@ -151,15 +158,15 @@ runs:
       if: runner.os == 'macOS' && steps.cache-sdk.outputs.cache-hit != 'true'
       shell: bash
       env:
-        STEPS_VARS_OUTPUTS_TAG: ${{ steps.vars.outputs.tag }}
-        INPUTS_VERSION: ${{ inputs.version }}
-        INPUTS_ARCH: ${{ inputs.arch }}
+        TAG: ${{ steps.vars.outputs.tag }}
+        VERSION: ${{ steps.vars.outputs.version }}
+        ARCH: ${{ inputs.arch }}
       run: |
         set -x
-        curl -fLO https://github.com/WerWolv/ImHex/releases/download/${STEPS_VARS_OUTPUTS_TAG}/imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
-        7zz x -aoa -snld imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg -o"imhex_temp"
+        curl -fLO https://github.com/WerWolv/ImHex/releases/download/${TAG}/imhex-${VERSION}-macOS-${ARCH}.dmg
+        7zz x -aoa -snld imhex-${VERSION}-macOS-${ARCH}.dmg -o"imhex_temp"
         mv imhex_temp/imhex.app/Contents/Resources/sdk imhex-sdk
-        rm -rf imhex_temp imhex-${INPUTS_VERSION}-macOS-${INPUTS_ARCH}.dmg
+        rm -rf imhex_temp imhex-${VERSION}-macOS-${ARCH}.dmg
 
     # Handle output
     - name: Set SDK Variable
