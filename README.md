@@ -68,7 +68,7 @@ All inputs and their defaults.
     arch: 'x86_64'
 
     # Whether to install system dependencies via pacman/brew
-    # If false, then you need to provide the following executables: unzip for Windows and 7zz (sevenzip in brew) for macOS
+    # If false, then you need to provide the following executables: unzip for Windows
     # default: 'true'
     install_dependencies: 'true'
 

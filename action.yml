@@ -129,7 +129,7 @@ runs:
       run: |
         set -x
         curl -fLO https://github.com/WerWolv/ImHex/releases/download/${TAG}/imhex-${VERSION}-Windows-Portable-${ARCH}.zip
-        mkdir -p imhex_temp
+
         unzip imhex-${VERSION}-Windows-Portable-${ARCH}.zip -d imhex_temp
         mv imhex_temp/sdk imhex-sdk
         rm -rf imhex_temp imhex-${VERSION}-Windows-Portable-${ARCH}.zip
@@ -151,7 +151,6 @@ runs:
         set -x
         brew reinstall python || brew link --overwrite python
         brew bundle --no-lock --file Brewfile
-        brew install sevenzip
         rm -rf /usr/local/Cellar/capstone
 
     - name: Download ImHex SDK (macOS)
@@ -164,9 +163,11 @@ runs:
       run: |
         set -x
         curl -fLO https://github.com/WerWolv/ImHex/releases/download/${TAG}/imhex-${VERSION}-macOS-${ARCH}.dmg
-        7zz x -aoa -snld imhex-${VERSION}-macOS-${ARCH}.dmg -o"imhex_temp"
-        mv imhex_temp/imhex.app/Contents/Resources/sdk imhex-sdk
-        rm -rf imhex_temp imhex-${VERSION}-macOS-${ARCH}.dmg
+
+        hdiutil attach "imhex-${VERSION}-macOS-${ARCH}.dmg" -mountpoint "/Volumes/ImHex" -nobrowse -quiet
+        cp -r "/Volumes/ImHex/ImHex.app/Contents/Resources/sdk" imhex-sdk
+        hdiutil detach "/Volumes/ImHex" -quiet
+        rm -f "imhex-${VERSION}-macOS-${ARCH}.dmg"
 
     # Handle output
     - name: Set SDK Variable
